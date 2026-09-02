@@ -1,8 +1,8 @@
 # Meu HackTown
 
-Um planejador pessoal para a programação do **HackTown 2026** — 1.255 atividades,
-seis dias, cinco pontos da cidade. Feito para caber no bolso e funcionar com a
-internet ruim de evento.
+Um planejador pessoal para o **HackTown 2026**, criado para transformar uma programação de mais de 1.000 atividades em um cronograma que realmente faça sentido para mim.
+
+O app combina **busca, filtros, curadoria personalizada, anotações e planejamento por dia** e o principal: permite compartilhar a seleção com outras pessoas por meio de imagens. Tudo isso em uma aplicação simples, leve e capaz de funcionar mesmo com a internet instável típica de eventos.
 
 **→ [meu-hacktown.pages.dev](https://meu-hacktown.pages.dev)**
 
@@ -12,119 +12,103 @@ internet ruim de evento.
   <img src="docs/img/carregando.png" width="270" alt="Tela de carregamento com esqueleto">
 </p>
 
-## Por que eu fiz isso
+## Contexto
 
-A ideia surgiu de uma dificuldade prática: com mais de mil atividades espalhadas por
-seis dias e cinco locais, ficou difícil organizar **quais eu queria priorizar**. Eu
-precisava de um lugar para decidir e guardar a minha seleção — e de algo
-**compartilhável com os colegas** que também vão ao evento, em vez de mandar print de
-lista no grupo.
+O HackTown tem uma programação enorme, distribuída por vários dias e locais. Para quem quer participar de forma intencional, o problema deixa de ser **encontrar atividades** (pois isso é o que não falta) e passa a ser decidir o que vale a pena priorizar em meio a tantas atrações variadas.
 
-Os filtros por tema (IA, Dev, Automação, Segurança, Empreender, Liderança, Design,
-Networking) eu montei **com ajuda do Claude**, para que ficassem direcionados aos meus
-interesses e áreas de atuação, em vez de seguir só as trilhas oficiais do evento.
+Eu queria um lugar para montar essa seleção, fazer anotações e consultar meu cronograma durante o evento. Também queria algo que pudesse ser facilmente compartilhado com os colegas, em vez de depender de prints ou listas enviadas no grupo.
 
-O site está publicado e no ar em **[meu-hacktown.pages.dev](https://meu-hacktown.pages.dev)**
-— é o link que eu compartilho com quem quiser usar.
+Foi daí que surgiu o **Meu HackTown**.
 
-## O que ele faz
+Além dos filtros oficiais do evento, criei uma camada de **curadoria própria**, organizada em temas como **IA, Desenvolvimento, Automação, Segurança, Empreendedorismo, Liderança, Design e Networking**. Os filtros para essa curadoria foram definidos com ajuda do Claude e aplicados ao conteúdo das atividades, buscando refletir meus interesses e áreas de atuação.
 
-- **Programação por dia**, com busca que ignora acento (`sessao` acha `Sessão`)
-- **Filtros por tema** — IA, Dev, Automação, Segurança, Empreender, Liderança,
-  Design, Networking — derivados do conteúdo, além dos filtros oficiais de trilha,
-  formato e local
-- **Curadoria**: uma camada minha de destaques, incluindo um detector de palestrantes
-  de empresas grandes lido do cargo de quem fala
-- **Marcar (★) e anotar** cada atividade, salvos no navegador
-- **Meu cronograma**: só o que você marcou, agrupado por dia
-- **Baixar a imagem do dia** em PNG, para mandar no grupo ou deixar salvo na galeria
-- **Offline**: a última programação baixada fica em cache; sem rede, o app abre com
-  ela e avisa
-- Tema claro e escuro, acompanhando o sistema
+## Recursos
+
+* **Programação por dia**, com busca tolerante a acentos (`sessao` encontra `Sessão`)
+* **Filtros por tema**, além dos filtros oficiais de trilha, formato e local
+* **Curadoria personalizada**, com destaques baseados no conteúdo das atividades e nos palestrantes
+* **Favoritar (★) e anotar** atividades diretamente no navegador
+* **Meu cronograma**, reunindo apenas as atividades selecionadas e agrupando-as por dia
+* **Compartilhamento em PNG**, gerando uma imagem do cronograma do dia para enviar para colegas ou salvar na galeria
+* **Funcionamento offline**, mantendo a última programação carregada em cache para uso sem conexão
+* **Tema claro e escuro**, acompanhando a preferência do sistema (esse foi só pra fazer charme)
 
 <p align="center">
   <img src="docs/img/desktop.png" width="700" alt="Versão desktop com barra lateral">
 </p>
 
-## Como funciona
+## Funcionamento
 
-É **um arquivo HTML**. Sem build, sem bundler, sem `node_modules`. Abre e roda.
+O projeto foi deliberadamente mantido pequeno: **um único arquivo HTML**, sem build, bundler ou `node_modules`.
 
-```
+```text
 index.html    ~57 KB — estilos, componentes React e lógica
 ```
 
-React e Babel entram por CDN e o JSX é compilado no próprio navegador. É uma escolha
-deliberada, com um custo real que está honestamente listado lá embaixo: em troca, o
-projeto inteiro é um arquivo que eu edito no celular se precisar, publico arrastando,
-e que não apodrece quando uma dependência muda de versão.
+React e Babel são carregados por CDN, e o JSX é compilado no próprio navegador. Isso não é a solução mais performática possível, mas tornou o projeto extremamente simples de editar, publicar e transportar, inclusive pelo celular.
 
-Os dados vêm da API pública do HackTown. O fluxo é curto:
+Os dados vêm da API pública utilizada pelo HackTown. O processamento acontece inteiramente no cliente:
 
-```
-fetchAll()  →  normalize()  →  filtros  →  agrupamento  →  render
-   ↓              ↓
- Supabase    achata os embeds e deriva
- (1 request   temas + curadoria de cada
-  paginado)   atividade
+```text
+fetchAll() → normalize() → filtros → agrupamento → render
+     ↓            ↓
+  Supabase    normalização,
+              temas e curadoria
 ```
 
-Tudo que você marca fica no `localStorage` do seu aparelho. A escolha foi por
-**simplicidade durante o desenvolvimento**: é um projeto pequeno, feito a princípio só
-para mim e alguns colegas, e sincronizar entre aparelhos exigiria login, banco e
-servidor para resolver um problema que eu não tenho. Sem conta, sem servidor meu — o
-que você anota não sai do seu navegador.
+O `normalize()` transforma a estrutura retornada pela API em um formato mais simples para a aplicação e também deriva os temas e informações utilizadas pela curadoria.
 
-### Sobre a chave do Supabase que está no código
+As atividades favoritedas e as anotações são armazenadas no `localStorage`.
 
-Ela está ali à vista, e isso é esperado: `sb_publishable_…` é uma **publishable key**
-do Supabase, o tipo de chave feito para ir no código do cliente. É exatamente a mesma
-chave que o site oficial do HackTown entrega para o navegador de qualquer pessoa que
-acessa a programação — quem protege os dados é o Row Level Security no servidor deles,
-não o segredo da chave.
+Optei por não criar contas ou sincronização entre dispositivos porque o objetivo inicial era resolver um problema pessoal e compartilhar o resultado com apenas alguns colegas. Adicionar autenticação e um backend próprio aumentaria bastante a complexidade sem resolver uma necessidade real do MVP.
 
-Ou seja: **não é credencial vazada, e este projeto não contorna proteção nenhuma.**
-Ele lê o mesmo endpoint público de leitura que o site oficial lê, só que com uma
-interface que serve pro meu uso. Deixei a chave no arquivo para o projeto rodar ao
-clonar; se o HackTown preferir que eu tire, é só me avisar.
+### Offline
 
-## Rodar local
+A programação é baixada e armazenada em cache no navegador. Se o usuário estiver sem conexão, o aplicativo tenta utilizar essa última versão disponível e informa que está trabalhando com dados em cache.
+
+Isso é especialmente importante para o contexto do projeto: **um app de programação de evento precisa continuar útil justamente quando a rede do evento está ruim.** As imagens compartilhaveis das atividades escolhidas também ajudam nisso.
+
+
+### Sobre a chave do Supabase / API propría do hacktown
+
+A chave presente no código é uma `sb_publishable_…`, destinada ao uso no cliente. Ela não funciona como uma senha administrativa ou como uma credencial privada.
+
+O aplicativo utiliza o mesmo endpoint público de leitura disponibilizado para a programação do evento e não tenta contornar as regras de acesso do servidor.
+
+A chave foi mantida no repositório para que o projeto continue funcionando após ser clonado. Caso a organização do HackTown prefira que ela seja removida, posso alterar a implementação.
+
+## Rodar localmente
 
 ```bash
 git clone https://github.com/helo-labs/meu-hacktown.git
 cd meu-hacktown
 python3 -m http.server 8000
-# abre http://localhost:8000
 ```
 
-Precisa ser por HTTP. Abrir o arquivo direto com `file://` não funciona — a origem
-`null` é barrada pelo CORS e o app abre vazio.
+Depois, abra `http://localhost:8000`.
+
+O projeto precisa ser servido por HTTP. Abrir o `index.html` diretamente com `file://` não funciona porque a origem `null` é bloqueada pelo CORS da API.
 
 ## Limites conhecidos
 
-Coisas que eu sei que estão erradas ou pendentes, medidas e não chutadas:
+O projeto também tem algumas limitações conhecidas:
 
-- **O Babel no navegador custa 617 KB comprimidos**, contra 17 KB do app e 46 KB do
-  React. É de longe o item mais pesado do carregamento, e some se o JSX for
-  precompilado no deploy. Adiado de propósito — resolver exige introduzir um passo de
-  build, que é justamente o que este projeto não tem.
-- A busca recalcula sobre as 1.255 atividades a cada tecla e os cards não são
-  memoizados. Num dia cheio (328 atividades) a digitação engasga no celular.
-- O app baixa a edição inteira e filtra na memória. Tranquilo nessa escala; acima de
-  ~5.000 atividades precisaria de paginação no servidor.
-- A paginação para em 8.000 atividades e **trunca em silêncio** se passar disso.
-- Nas abas Curadoria e Meu cronograma os filtros de tema continuam valendo sem
-  aparecer na tela.
+* **Babel no navegador:** representa cerca de 617 KB comprimidos, contra ~17 KB do app e ~46 KB do React. É o maior custo do carregamento. Precompilar o JSX resolveria isso, mas exigiria introduzir justamente o processo de build que o projeto busca evitar.
+* **Busca:** atualmente recalcula os resultados sobre todas as atividades a cada tecla e os cards não são memoizados. Em dias com muitas atividades, isso pode causar pequenos delays em celulares.
+* **Dados:** a edição inteira é baixada e filtrada em memória. Funciona bem na escala atual, mas uma programação muito maior exigiria paginação ou processamento no servidor.
+* **Paginação:** o carregamento possui um limite de 8.000 atividades (contra as ~1200 do evento, não há problemas).
+* **Filtros:** nas abas **Curadoria** e **Meu cronograma**, os filtros de tema continuam ativos mesmo quando não estão visíveis na interface. -- resolvido 02/09
+
+Esses pontos são conhecidos e fazem parte das decisões e trade-offs deste projeto, não bugs desconhecidos.
 
 ## Sobre
 
-Feito por [@helo-labs](https://github.com/helo-labs), estudante de Ciência da
-Computação na UNIFAL-MG, para uso próprio no HackTown 2026. Sem vínculo com a
-organização do evento.
+Feito  para uso próprio durante o HackTown 2026.
 
-Se você vai ao HackTown e quiser usar, fique à vontade — é só abrir o link. E se
-quiser adaptar para outro evento, o pedaço que importa é o `normalize()`: troque o
-`SELECT` e o mapeamento e o resto continua de pé.
+**Este projeto não possui vínculo com a organização do evento.**
 
-Não reivindico direito nenhum sobre isto: use, copie e adapte como quiser. Os dados da
-programação são do HackTown, não meus.
+Se você vai ao HackTown, fique à vontade para usar: [meu-hacktown.pages.dev](https://meu-hacktown.pages.dev).
+
+Se quiser adaptar a ideia para outro evento, o principal ponto de integração é o `normalize()`: basta adaptar a consulta e o mapeamento dos dados para que o restante da aplicação continue funcionando.
+
+O código pode ser usado, copiado e adaptado livremente. Os dados da programação pertencem ao HackTown.
