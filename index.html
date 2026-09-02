@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Meu HackTown</title>
+<meta name="description" content="Planejador pessoal da programação ao vivo do HackTown 2026.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  :root{
+    --bg:#F6F3FC; --surface:#FFFFFF; --surface-2:#F0EAFB;
+    --ink:#211B32; --muted:#6E6488; --line:#E6DEF5;
+    --violet:#7C3AED; --violet-deep:#5B21B6; --violet-soft:#EDE4FE;
+    --gold:#E08A00; --gold-soft:#FCEFD6;
+    --online:#0E7C86; --online-soft:#D5EEF0;
+    --helo:#D1257A; --helo-soft:#FBDCEC;
+    --shadow:0 1px 2px rgba(41,20,80,.06),0 8px 24px rgba(41,20,80,.06);
+    --radius:16px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --bg:#130F1E; --surface:#1C1630; --surface-2:#241C3B;
+      --ink:#EDE9F7; --muted:#9E93B8; --line:#2E2545;
+      --violet:#A78BFA; --violet-deep:#8B5CF6; --violet-soft:#2A2145;
+      --gold:#FBBF24; --gold-soft:#3A2C12;
+      --online:#4FD1C5; --online-soft:#123033;
+      --helo:#F27CB0; --helo-soft:#37162A;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#130F1E; --surface:#1C1630; --surface-2:#241C3B;
+    --ink:#EDE9F7; --muted:#9E93B8; --line:#2E2545;
+    --violet:#A78BFA; --violet-deep:#8B5CF6; --violet-soft:#2A2145;
+    --gold:#FBBF24; --gold-soft:#3A2C12;
+    --online:#4FD1C5; --online-soft:#123033;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+  img{max-width:100%}
+  #root{max-width:560px;margin:0 auto;min-height:100vh;padding-bottom:80px;}
+  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,textarea{font-family:inherit}
+  :focus-visible{outline:2px solid var(--violet);outline-offset:2px;border-radius:6px}
+  svg{display:block}
+
+  .top{position:sticky;top:0;z-index:20;background:var(--bg);
+    padding:calc(12px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);}
+  .brand{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:11px}
+  .brand h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:22px;letter-spacing:-.02em;margin:0;line-height:1}
+  .brand h1 span{color:var(--violet)}
+  .brand .sub{font-size:11px;color:var(--muted);margin-top:4px}
+  .hbtns{display:flex;gap:7px;flex:none}
+  .iconbtn{width:38px;height:38px;border-radius:11px;background:var(--surface-2);display:grid;place-items:center}
+  .iconbtn svg{width:19px;height:19px}
+  .iconbtn.spin svg{animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .banner{font-size:12px;padding:7px 11px;border-radius:10px;margin-bottom:10px;display:flex;align-items:center;gap:8px;line-height:1.35}
+  .banner.warn{background:var(--gold-soft);color:var(--gold)}
+  .banner.err{background:#fde8e8;color:#b42318}
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .banner.err{background:#3a1518;color:#f7a7a2}}
+  :root[data-theme="dark"] .banner.err{background:#3a1518;color:#f7a7a2}
+  .banner button{font-weight:700;text-decoration:underline;margin-left:auto;white-space:nowrap}
+
+  .search{position:relative;margin-bottom:10px}
+  .search input{width:100%;padding:12px 14px 12px 40px;border-radius:12px;background:var(--surface);
+    border:1px solid var(--line);color:var(--ink);font-size:15px;box-shadow:var(--shadow)}
+  .search input::placeholder{color:var(--muted)}
+  .search .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
+  .search .si svg{width:18px;height:18px}
+  .search .clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:28px;height:28px;border-radius:8px;color:var(--muted)}
+  .search .clr svg{width:16px;height:16px;margin:auto}
+
+  .days{display:flex;gap:7px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .days::-webkit-scrollbar{display:none}
+  .day{flex:none;padding:7px 12px;border-radius:11px;background:var(--surface-2);text-align:center;line-height:1.15;min-width:52px}
+  .day .wd{font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
+  .day .dd{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16px;margin-top:1px}
+  .day.on{background:var(--violet);color:#fff}
+  .day.on .wd{color:rgba(255,255,255,.82)}
+
+  .filterbar{display:flex;gap:7px;align-items:center;padding:11px 16px 3px}
+  .chips{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;flex:1}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:6px 12px;border-radius:999px;font-size:12.5px;font-weight:600;background:var(--surface-2);color:var(--muted);border:1px solid transparent;white-space:nowrap}
+  .chip.on{background:var(--violet-soft);color:var(--violet-deep);border-color:var(--violet)}
+  .advbtn{flex:none;display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;
+    font-size:12.5px;font-weight:700;background:var(--surface);border:1px solid var(--line);color:var(--ink);position:relative}
+  .advbtn svg{width:15px;height:15px}
+  .advbtn .n{background:var(--violet);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;padding:0 4px}
+
+  .count{padding:8px 16px 2px;font-size:12px;color:var(--muted)}
+
+  .list{padding:6px 16px 20px;display:flex;flex-direction:column;gap:18px}
+  .tgroup{display:flex;flex-direction:column;gap:9px}
+  .thead{display:flex;align-items:baseline;gap:8px;margin:8px 2px 1px}
+  .thead .t{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:13px;color:var(--violet-deep);font-variant-numeric:tabular-nums}
+  .thead .l{height:1px;flex:1;background:var(--line)}
+  .dayband{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:4px 2px 0;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:15px}
+  .dayband .n{font-size:12px;color:var(--muted);font-weight:500;font-family:"Hanken Grotesk"}
+  .dlbtn{margin-left:auto;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:10px;background:var(--violet-soft);color:var(--violet-deep);font-weight:700;font-size:12.5px;font-family:"Hanken Grotesk"}
+  .dlbtn svg{width:15px;height:15px}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:13px 14px;box-shadow:var(--shadow);position:relative;transition:border-color .15s}
+  .card.saved{border-color:var(--gold)}
+  .card .row{display:flex;gap:10px;align-items:flex-start}
+  .card .meta{flex:1;min-width:0}
+  .ttl{font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16px;line-height:1.22;letter-spacing:-.01em;text-wrap:balance;margin:0 0 3px}
+  .spk{font-size:13.5px;color:var(--violet-deep);font-weight:600;margin-bottom:6px}
+  .ctime{font-family:"JetBrains Mono",monospace;font-weight:700;font-size:12.5px;color:var(--violet-deep);letter-spacing:.01em;margin-bottom:5px;font-variant-numeric:tabular-nums}
+  .loc{font-size:12.5px;color:var(--muted);display:flex;align-items:flex-start;gap:5px;margin-bottom:8px}
+  .loc svg{width:13px;height:13px;flex:none;margin-top:2px}
+  .tags{display:flex;flex-wrap:wrap;gap:5px}
+  .tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:7px;background:var(--surface-2);color:var(--muted)}
+  .tag.fmt{background:var(--violet-soft);color:var(--violet-deep)}
+  .badge{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:7px;letter-spacing:.02em;display:inline-flex;align-items:center;gap:4px}
+  .badge svg{width:12px;height:12px}
+  .badge.on-air{background:var(--online-soft);color:var(--online)}
+  .badge.big{background:var(--gold-soft);color:var(--gold)}
+  .badge.esp{background:var(--violet-soft);color:var(--violet-deep)}
+
+  .star{flex:none;width:40px;height:40px;border-radius:12px;background:var(--surface-2);display:grid;place-items:center;transition:transform .12s}
+  .star svg{width:21px;height:21px}
+  .star:active{transform:scale(.88)}
+  .star.on{background:var(--gold);color:#fff}
+
+  .actions{display:flex;gap:14px;margin-top:10px;align-items:center;flex-wrap:wrap}
+  .linkbtn{font-size:12.5px;font-weight:600;color:var(--violet);display:inline-flex;align-items:center;gap:6px}
+  .linkbtn svg{width:15px;height:15px}
+  .linkbtn .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);display:none}
+  .linkbtn.has .dot{display:block}
+
+  .expand{margin-top:11px;padding-top:11px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:10px}
+  .desc{font-size:13.5px;color:var(--muted);line-height:1.5;white-space:pre-wrap}
+  textarea.note{width:100%;min-height:64px;resize:vertical;padding:10px 11px;border-radius:11px;background:var(--surface-2);border:1px solid var(--line);color:var(--ink);font-size:14px;line-height:1.4}
+  textarea.note::placeholder{color:var(--muted)}
+  .savebtn{background:var(--violet);color:#fff;padding:8px 14px;border-radius:10px;font-weight:700;font-size:13px}
+  .notesaved{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:5px}
+  .notesaved svg{width:14px;height:14px;color:var(--gold)}
+
+  .empty{text-align:center;color:var(--muted);padding:56px 24px;font-size:14.5px;line-height:1.5}
+  .empty svg{width:40px;height:40px;color:var(--violet);opacity:.72;margin:0 auto 12px}
+
+  .nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;z-index:30;
+    background:var(--surface);border-top:1px solid var(--line);display:flex;gap:8px;
+    padding:8px 12px calc(8px + env(safe-area-inset-bottom));box-shadow:0 -6px 20px rgba(41,20,80,.05)}
+  .nav button{flex:1;padding:9px;border-radius:12px;font-weight:700;font-size:13.5px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--muted);position:relative}
+  .nav button .ic svg{width:21px;height:21px}
+  .nav button.on{background:var(--violet-soft);color:var(--violet-deep)}
+  .nav .badge-n{position:absolute;transform:translate(15px,-3px);background:var(--gold);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;border-radius:8px;display:grid;place-items:center;padding:0 4px}
+
+  .modal{position:fixed;inset:0;z-index:50;background:rgba(20,12,36,.66);display:flex;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px);animation:fade .18s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet{width:100%;max-width:560px;background:var(--surface);border-radius:22px 22px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom));max-height:92vh;display:flex;flex-direction:column;box-shadow:0 -10px 40px rgba(0,0,0,.3)}
+  .sheet-h{display:flex;align-items:center;justify-content:space-between;font-family:"Bricolage Grotesque",sans-serif;font-weight:700;font-size:16px;margin-bottom:10px}
+  .sheet-h button{width:34px;height:34px;border-radius:10px;background:var(--surface-2);display:grid;place-items:center}
+  .sheet-h svg{width:18px;height:18px}
+  .sheet-scroll{overflow:auto}
+  .sheet-tip{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.4}
+  .sheet-tip b{color:var(--ink)}
+  .sheet-img{overflow:auto;border-radius:14px;border:1px solid var(--line)}
+  .fgroup{margin-bottom:16px}
+  .fgroup h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+  .fopts{display:flex;flex-wrap:wrap;gap:7px}
+  .fopt{padding:7px 12px;border-radius:999px;font-size:13px;font-weight:600;background:var(--surface-2);color:var(--muted);border:1px solid transparent}
+  .fopt.on{background:var(--violet-soft);color:var(--violet-deep);border-color:var(--violet)}
+  .toggle{display:flex;align-items:center;justify-content:space-between;padding:10px 0;font-size:14px;font-weight:600;border-bottom:1px solid var(--line)}
+  .sw{width:44px;height:26px;border-radius:999px;background:var(--surface-2);position:relative;transition:background .15s;flex:none}
+  .sw.on{background:var(--violet)}
+  .sw i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}
+  .sw.on i{transform:translateX(18px)}
+  .sheet-foot{display:flex;gap:10px;margin-top:8px}
+  .sheet-foot button{flex:1;padding:12px;border-radius:12px;font-weight:700;font-size:14px}
+  .sheet-foot .clr2{background:var(--surface-2);color:var(--ink)}
+  .sheet-foot .apply{background:var(--violet);color:#fff}
+
+  /* curadoria Helo */
+  .chip.curad{background:linear-gradient(90deg,var(--helo),var(--violet));color:#fff;border:none;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+  .chip.curad svg{width:14px;height:14px}
+  .chip.curad.off{background:var(--helo-soft);color:var(--helo)}
+  .helo-why{font-size:12px;color:var(--helo);font-weight:700;display:flex;align-items:center;gap:5px;margin:-2px 0 7px}
+  .helo-why svg{width:13px;height:13px}
+  .catbar{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:0;flex:1;min-width:0}
+  .catbar::-webkit-scrollbar{display:none}
+
+  /* imagem: ações */
+  .imgacts{display:flex;gap:9px;margin-bottom:12px}
+  .imgacts button,.imgacts a{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px;border-radius:12px;font-weight:700;font-size:14px;text-decoration:none}
+  .imgacts svg{width:17px;height:17px}
+  .imgacts .share{background:linear-gradient(90deg,var(--helo),var(--violet));color:#fff}
+  .imgacts .dl{background:var(--surface-2);color:var(--ink)}
+
+
+  /* ---------- desktop ---------- */
+  .side{display:none}
+  @media (min-width:960px){
+    #root{max-width:1220px;padding-bottom:28px}
+    .shell{display:grid;grid-template-columns:252px minmax(0,1fr);gap:28px;align-items:start}
+
+    .side{display:flex;flex-direction:column;gap:18px;position:sticky;top:0;
+      max-height:100vh;overflow-y:auto;padding:22px 18px 28px 4px;
+      border-right:1px solid var(--line);scrollbar-width:thin}
+    .side-brand h1{font-family:"Bricolage Grotesque",sans-serif;font-weight:800;font-size:23px;letter-spacing:-.02em;margin:0;line-height:1.05}
+    .side-brand h1 span{color:var(--violet)}
+    .side-brand .sub{font-size:11.5px;color:var(--muted);margin-top:6px;line-height:1.35}
+    .side-nav{display:flex;flex-direction:column;gap:4px}
+    .side-nav button{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;
+      font-weight:700;font-size:14px;color:var(--muted);text-align:left}
+    .side-nav button svg{width:19px;height:19px;flex:none}
+    .side-nav button:hover{background:var(--surface-2);color:var(--ink)}
+    .side-nav button.on{background:var(--violet-soft);color:var(--violet-deep)}
+    .side-nav .badge-n{margin-left:auto;background:var(--gold);color:#fff;font-size:10.5px;font-weight:700;
+      min-width:18px;height:18px;border-radius:9px;display:grid;place-items:center;padding:0 5px}
+    .side-fh{font-size:11.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+      font-weight:700;display:flex;align-items:center;justify-content:space-between;gap:8px;
+      padding-top:16px;margin-bottom:12px;border-top:1px solid var(--line)}
+    .side-fh button{font-size:11px;font-weight:700;color:var(--violet);text-transform:none;letter-spacing:0}
+    .side-filters .fgroup{margin-bottom:14px}
+    .side-filters .fopt{font-size:12px;padding:5px 10px}
+    .side-filters .toggle{font-size:13px;padding:8px 0}
+
+    .main{min-width:0}
+    .htitle{display:none}
+    .top{padding:20px 0 12px}
+    .brand{margin-bottom:0}
+    .hbtns{margin-left:auto}
+    .search{margin:14px 0 12px}
+    .day{min-width:64px;padding:8px 14px}
+    .filterbar{padding:14px 0 4px}
+    .advbtn{display:none}
+    .count{padding:10px 0 2px}
+    .list{padding:8px 0 28px}
+    .tgroup{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+    .tgroup .thead,.tgroup .dayband,.sk-time{grid-column:1/-1}
+    .card{transition:border-color .15s,transform .12s,box-shadow .15s}
+    .card:hover{border-color:var(--violet);transform:translateY(-1px);
+      box-shadow:0 2px 4px rgba(41,20,80,.07),0 12px 28px rgba(41,20,80,.09)}
+    .nav{display:none}
+    .empty{padding:72px 24px}
+    .modal{align-items:center}
+    .sheet{border-radius:20px;max-width:600px;padding-bottom:20px}
+    .sheet{animation:sheetzoom .28s var(--ease-out)}
+    @keyframes sheetzoom{from{opacity:0;transform:scale(.965)}to{opacity:1;transform:none}}
+  }
+  @media (min-width:1360px){
+    #root{max-width:1400px}
+    .tgroup{grid-template-columns:repeat(3,minmax(0,1fr))}
+  }
+
+  /* ---------- movimento ---------- */
+  :root{
+    --ease:cubic-bezier(.32,.72,0,1);
+    --ease-out:cubic-bezier(.22,1,.36,1);
+    --spring:cubic-bezier(.34,1.42,.64,1);
+  }
+
+  /* carregando: esqueleto no lugar da tela em branco */
+  .sk{background:linear-gradient(90deg,var(--surface-2) 0%,var(--line) 42%,var(--surface-2) 78%);
+    background-size:240% 100%;animation:sweep 1.5s var(--ease) infinite}
+  @keyframes sweep{from{background-position:130% 0}to{background-position:-70% 0}}
+  .sk-time{height:13px;width:106px;border-radius:6px;margin:8px 2px 1px}
+  .sk-card{border:1px solid var(--line);background:var(--surface);border-radius:var(--radius);
+    padding:14px;display:flex;flex-direction:column;gap:9px;box-shadow:var(--shadow)}
+  .sk-l{height:11px;border-radius:6px}
+
+  /* atualizando com conteúdo na tela: barra fina no topo */
+  .prog{position:fixed;top:0;left:0;right:0;height:2px;z-index:60;overflow:hidden;pointer-events:none}
+  .prog i{display:block;height:100%;width:38%;border-radius:0 2px 2px 0;
+    background:linear-gradient(90deg,transparent,var(--violet),var(--helo));
+    animation:sweepbar 1.15s var(--ease) infinite}
+  @keyframes sweepbar{from{transform:translateX(-105%)}to{transform:translateX(330%)}}
+  .iconbtn.spin svg{animation:spin 1.1s linear infinite}
+
+  /* entrada dos cards: sobe de leve, escalonado só nos primeiros */
+  .card{animation:rise .34s var(--ease-out) backwards}
+  @keyframes rise{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
+  .tgroup .card:nth-child(2){animation-delay:30ms}
+  .tgroup .card:nth-child(3){animation-delay:60ms}
+  .tgroup .card:nth-child(4){animation-delay:90ms}
+  .tgroup .card:nth-child(5){animation-delay:120ms}
+  .tgroup .card:nth-child(6){animation-delay:150ms}
+  .tgroup .card:nth-child(n+7){animation-delay:170ms}
+
+  /* toque: resposta curta, sem exagero */
+  .chip,.fopt,.day{transition:background .18s ease,color .18s ease,border-color .18s ease,transform .14s var(--ease-out)}
+  .chip:active,.fopt:active,.day:active{transform:scale(.96)}
+  .star{transition:transform .2s var(--spring),background .2s ease,color .2s ease}
+  .star:active{transform:scale(.9)}
+  .star.on{animation:pop .34s var(--spring)}
+  @keyframes pop{0%{transform:scale(.86)}55%{transform:scale(1.11)}100%{transform:scale(1)}}
+  .sw i{transition:transform .26s var(--spring)}
+  .linkbtn,.dlbtn,.advbtn,.savebtn,.iconbtn{transition:opacity .15s ease,background .18s ease,transform .14s var(--ease-out)}
+  .linkbtn:active,.dlbtn:active,.advbtn:active,.savebtn:active,.iconbtn:active{transform:scale(.95)}
+
+  /* modal: fundo desfoca, folha sobe de baixo */
+  .modal{animation:fade .22s var(--ease-out)}
+  .sheet{animation:sheetup .38s var(--ease)}
+  @keyframes sheetup{from{transform:translateY(100%)}to{transform:none}}
+  .expand{animation:rise .26s var(--ease-out) backwards}
+  .banner{animation:rise .28s var(--ease-out) backwards}
+
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+<script type="text/babel">
+const {useState,useEffect,useMemo,useRef} = React;
+
+// ---- Fonte de dados (chave pública/publishable — sem risco em ficar exposta) ----
+const SB_URL = "https://xbsooiedncsrmrhjasvk.supabase.co";
+const SB_KEY = "sb_publishable_-xZkCMPyJLSSXZZvwHRGLw_QFbLS_yN";
+const SELECT = "id,title,description,event_date,start_time,end_time,age_rating,activity_type,status,guarda_chuva,is_evento_maior,image_url,parent_event_id,formato,mediador,selo,registration_url,venue:venue_id(name,area,maps_url),event_tracks(tracks(id,name,code)),event_speakers(cargo_empresa,speakers(id,name,cargo_empresa))";
+const DATA_DATE = (typeof BUILD_DATE!=="undefined") ? BUILD_DATE : new Date().toLocaleDateString("pt-BR");
+
+const TEMAS = ["IA","Dev","Automação","Segurança","Empreender","Liderança","Design","Networking"];
+// Chaves do localStorage. NUNCA renomear: o histórico de quem já usa o app
+// (marcados e anotações) está gravado sob estes nomes no navegador de cada pessoa.
+// Trocar uma string aqui apaga o cronograma de todo mundo, sem aviso.
+const K_TEMA="mht_theme", K_SALVOS="mht_saved", K_NOTAS="mht_notes",
+      K_CACHE="mht_cache_ev", K_CACHE_EM="mht_cache_at";
+
+// Paginação do Supabase: a API devolve no máximo PAGINA por chamada.
+// MAX_PAGINAS é um teto de segurança contra laço infinito, não um limite de dados —
+// se a programação passar de PAGINA*MAX_PAGINAS, o app truncaria em silêncio.
+const PAGINA=1000, MAX_PAGINAS=8;
+
+const LS = {
+  get(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+};
+const norm = s => (s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+const hhmm = t => t? String(t).slice(0,5) : "";
+
+function dLabel(date){
+  const d=new Date(date+"T12:00:00");
+  let wd=d.toLocaleDateString("pt-BR",{weekday:"short"}).replace(".","");
+  wd=wd.charAt(0).toUpperCase()+wd.slice(1);
+  const dd=String(d.getDate()).padStart(2,"0"), mm=String(d.getMonth()+1).padStart(2,"0");
+  return {wd,dd,full:`${wd} ${dd}/${mm}`};
+}
+
+// ---- classifica cada evento nos temas simplificados ----
+function temasFor(ev){
+  const tr = ev.trackNames.map(n=>norm(n));
+  const hay = norm(ev.title+" "+ev.desc+" "+ev.trackNames.join(" ")+" "+ev.guarda+" "+ev.type);
+  const has = re => re.test(hay);
+  const o = new Set();
+  if(tr.some(t=>t.includes("corporate ai")) || has(/\bia\b|inteligencia artificial|\bllm\b|agente|machine learning|generativ|\bgpt\b|\bprompt/)) o.add("IA");
+  if(tr.some(t=>t.includes("desenvolvimento de software")) || has(/desenvolvedor|\bdev\b|codig|software|deploy|\bapi\b|docker|serverless|\brag\b|fine.?tuning|kiro|vibe cod|engenharia de software/)) o.add("Dev");
+  if(has(/automa[cç]|agentic|fabrica agent|no.?code|\bworkflow\b|\bbpo\b|automatiz/)) o.add("Automação");
+  if(has(/seguran[cç]a|cyber|ciber|\blgpd\b|vazament|invad|exploit/)) o.add("Segurança");
+  if(tr.some(t=>t.includes("estrategia")||t.includes("ecossistemas emergentes")) || ev.type==="Startups" || ev.guarda.toLowerCase().includes("startup") || has(/startup|founder|empreend|fintech|investidor|cap table|scaleup|neg[oó]cio|venture/)) o.add("Empreender");
+  if(tr.some(t=>t.includes("trabalho e lideran")) || has(/lideran[cç]|\bl[ií]der|\bgest[aã]o\b|\bgestor/)) o.add("Liderança");
+  if(tr.some(t=>t.includes("produto e design")) || has(/\bdesign\b|\bux\b|\bui\b|produto digital/)) o.add("Design");
+  if(ev.type==="Startups" || has(/matchmaking|coffee sessions|night sessions|\bfeira\b|\bpitch\b|networking/)) o.add("Networking");
+  return [...o];
+}
+
+// ---- Curadoria da Helo (camada própria, além das trilhas do site) ----
+const BIG_CI=[[/nvidia/i,"NVIDIA"],[/nubank/i,"Nubank"],[/microsoft/i,"Microsoft"],[/\baws\b|amazon/i,"AWS"],[/google/i,"Google"],[/mercado ?livre/i,"Mercado Livre"],[/tiktok/i,"TikTok"],[/totvs/i,"TOTVS"],[/luizalabs|magazine luiza|magalu/i,"Magalu"],[/rd station/i,"RD Station"],[/ifood/i,"iFood"],[/\bstone\b|pagseguro/i,"Stone"],[/hotmart/i,"Hotmart"],[/\bvtex\b/i,"VTEX"],[/openai|anthropic|deepmind/i,"IA Lab"],[/accenture/i,"Accenture"],[/\bibm\b/i,"IBM"],[/localiza/i,"Localiza"],[/sebrae/i,"Sebrae"],[/sicredi/i,"Sicredi"],[/embraer/i,"Embraer"],[/\bweg\b/i,"WEG"],[/\bdell\b/i,"Dell"],[/qualcomm/i,"Qualcomm"],[/ericsson/i,"Ericsson"],[/samsung/i,"Samsung"],[/motorola/i,"Motorola"],[/petrobras/i,"Petrobras"],[/embrapii/i,"EMBRAPII"],[/\bsap\b/i,"SAP"],[/oracle/i,"Oracle"],[/serpro/i,"Serpro"],[/picpay/i,"PicPay"],[/ita[uú]/i,"Itaú"],[/natura/i,"Natura"],[/ambev/i,"Ambev"],[/\bb3\b/i,"B3"],[/c6 ?bank/i,"C6"]];
+const BIG_CS=[[/\bMeta\b/,"Meta"],[/\bVivo\b/,"Vivo"],[/\bClaro\b/,"Claro"],[/\bInter\b/,"Inter"],[/\bGlobo\b/,"Globo"],[/\bIntel\b/,"Intel"],[/\bXP\b/,"XP"]];
+const cleanCargo=c=>(c||"").replace(/https?:\/\/\S+/gi,"").replace(/\b(?:www\.|instagram\.com|linkedin\.com|lnkd\.in|bit\.ly)\S*/gi,"");
+function bigBrand(ev){
+  for(const s of (ev._speakers||[])){
+    const c=cleanCargo(s.cargo||"");
+    for(const [re,n] of BIG_CI){ if(re.test(c)) return {brand:n, who:s.name, cargo:s.cargo}; }
+    for(const [re,n] of BIG_CS){ if(re.test(c)) return {brand:n, who:s.name, cargo:s.cargo}; }
+  }
+  return null;
+}
+function heloFor(ev){
+  const t=norm(ev.title), sp=norm(ev.speaker);
+  const bb=bigBrand(ev);
+  if(bb) return {cat:"Conexões", why:bb.brand, who:bb.who, cargo:bb.cargo};
+  if(/silvio meira/.test(sp)) return {cat:"Conexões",why:"Silvio Meira",cargo:"Cientista-chefe · lenda tech BR"};
+  if(/nathalia arcuri/.test(sp)) return {cat:"Conexões",why:"Me Poupe!",cargo:"Fundadora"};
+  if(/rashmi airan|neil redding|heather collins/.test(sp)) return {cat:"Conexões",why:"Internacional"};
+  if(/\brag\b|fine.?tuning|\bllm\b|agente|multiagente|multi.?agent|guardrail|kiro|vibe cod|spec.?driven|\bsdd\b|serverless|\bnix\b|\bdeploy\b|mlops|engenharia de prompt|copiloto|48 placas|computacao quantica|\b6g\b/.test(t)) return {cat:"Dev & IA", why:"Imperdível dev/IA"};
+  if(/automa|agentic|fabrica agent|no.?code|\bbpo\b|workflow/.test(t)) return {cat:"Automação", why:"Automação"};
+  if(/seguran[cç]a|ciber|cyber|\blgpd\b|hacker|hackers|invad|vazament|exploit|pentest|red team/.test(t)) return {cat:"Segurança", why:"Segurança"};
+  if(/cap table|fintech|investidor|founder|scaleup|vale da morte|deep ?tech|venture|empreend|do zero/.test(t)) return {cat:"Empreender", why:"Empreender"};
+  if(/matchmaking|coffee sessions|night sessions|\bfeira\b|the pitch|speed dating/.test(t)) return {cat:"Stands & Network", why:"Networking"};
+  if(/shinyashiki|arthur diniz|gustavo caetano|conrado navarro|izabella camargo/.test(sp)) return {cat:"Liderança", why:"Liderança"};
+  return null;
+}
+const HELO_CATS=["Conexões","Dev & IA","Automação","Segurança","Empreender","Stands & Network","Liderança"];
+
+function normalize(rows){
+  return rows.map(r=>{
+    const tracks = (r.event_tracks||[]).map(t=>t.tracks).filter(Boolean);
+    const trackNames = tracks.map(t=>t.name);
+    const spk = (r.event_speakers||[]).map(s=>s.speakers&&s.speakers.name).filter(Boolean);
+    const spkFull = (r.event_speakers||[]).map(s=>({name:s.speakers&&s.speakers.name, cargo:(s.speakers&&s.speakers.cargo_empresa)||""})).filter(x=>x.name);
+    const venue = r.venue||{};
+    const online = /online|remota|remoto|à distância|a distancia/i.test((r.formato||"")+" "+(r.guarda_chuva||"")+" "+(venue.name||""));
+    const ev = {
+      id:r.id, date:r.event_date, s:hhmm(r.start_time), e:hhmm(r.end_time),
+      title:(r.title||"").trim(), desc:(r.description||"").trim(),
+      speaker: spk.join(" · "), mediador:(r.mediador||"").trim(),
+      local: venue.name || (r.formato||"") , area: venue.area||"", maps: venue.maps_url||"",
+      type: r.activity_type||"", formato:r.formato||"",
+      trackNames, guarda:(typeof r.guarda_chuva==="string"?r.guarda_chuva:""), especial: !!r.is_evento_maior,
+      online, selo:(r.selo||"").trim(), reg:r.registration_url||"", age:r.age_rating||"", _speakers:spkFull
+    };
+    ev.temas = temasFor(ev);
+    ev.helo = heloFor(ev);
+    ev.speakerFull = ev.speaker || (ev.mediador? "Mediação: "+ev.mediador : "");
+    return ev;
+  });
+}
+
+async function fetchAll(){
+  const page=PAGINA; let offset=0, all=[];
+  for(let i=0;i<MAX_PAGINAS;i++){
+    const url=`${SB_URL}/rest/v1/events?select=${encodeURIComponent(SELECT)}&status=eq.publicado&order=event_date.asc,start_time.asc,id.asc&limit=${page}&offset=${offset}`;
+    const res=await fetch(url,{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
+    if(!res.ok) throw new Error("HTTP "+res.status);
+    const rows=await res.json();
+    all=all.concat(rows);
+    if(rows.length<page) break;
+    offset+=page;
+  }
+  return all;
+}
+
+function Icon({name}){
+  const p={viewBox:"0 0 24 24",fill:"none",stroke:"currentColor",strokeWidth:"1.8",strokeLinecap:"round",strokeLinejoin:"round"};
+  switch(name){
+    case "pin": return <svg {...p}><path d="M12 21c3.6-3.9 5.8-6.9 5.8-10A5.8 5.8 0 0 0 6.2 11c0 3.1 2.2 6.1 5.8 10Z"/><circle cx="12" cy="10.8" r="2"/></svg>;
+    case "search": return <svg {...p} strokeWidth="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m20 20-4.2-4.2"/></svg>;
+    case "add": return <svg {...p} strokeWidth="2"><path d="M12 7.2v9.6M7.2 12h9.6"/></svg>;
+    case "added": return <svg {...p} strokeWidth="2.4" stroke="#fff"><path d="M5.5 12.5l3.8 3.8L18.5 7.5"/></svg>;
+    case "note": return <svg {...p}><path d="M4.5 6A1.5 1.5 0 0 1 6 4.5h12A1.5 1.5 0 0 1 19.5 6v8A1.5 1.5 0 0 1 18 15.5H9.2L5 19.5V6Z"/><path d="M8 9h8M8 12h5"/></svg>;
+    case "check": return <svg {...p} strokeWidth="2.2"><path d="M5.5 12.5l3.8 3.8L18.5 7.5"/></svg>;
+    case "live": return <svg {...p}><circle cx="12" cy="12" r="2" fill="currentColor" stroke="none"/><path d="M8.4 8.4a5 5 0 0 0 0 7.2M15.6 8.4a5 5 0 0 1 0 7.2"/></svg>;
+    case "spark": return <svg {...p} strokeWidth="1.6"><path d="M12 4.5c.4 3.7 1.8 5.1 5.5 5.5-3.7.4-5.1 1.8-5.5 5.5-.4-3.7-1.8-5.1-5.5-5.5 3.7-.4 5.1-1.8 5.5-5.5Z"/></svg>;
+    case "agenda": return <svg {...p}><rect x="3.5" y="4.5" width="17" height="6" rx="2"/><rect x="3.5" y="13.5" width="12" height="6" rx="2"/></svg>;
+    case "collection": return <svg {...p}><rect x="4" y="3.8" width="16" height="16.4" rx="3"/><path d="M8 9l1.6 1.6L13 7.2"/><path d="M8 14h8M8 16.6h5"/></svg>;
+    case "theme": return <svg {...p}><circle cx="12" cy="12" r="8.4"/><path d="M12 3.6v16.8a8.4 8.4 0 0 0 0-16.8Z" fill="currentColor" stroke="none"/></svg>;
+    case "download": return <svg {...p} strokeWidth="2"><path d="M12 4v9.5M8.4 10.1 12 13.7l3.6-3.6"/><path d="M5 15.5v2.2A1.8 1.8 0 0 0 6.8 19.5h10.4a1.8 1.8 0 0 0 1.8-1.8v-2.2"/></svg>;
+    case "close": return <svg {...p} strokeWidth="2"><path d="M6 6l12 12M18 6 6 18"/></svg>;
+    case "sliders": return <svg {...p} strokeWidth="2"><path d="M4 7h10M18 7h2M4 12h4M12 12h8M4 17h13M20 17h0"/><circle cx="15.5" cy="7" r="2"/><circle cx="9.5" cy="12" r="2"/><circle cx="18.5" cy="17" r="2"/></svg>;
+    case "refresh": return <svg {...p} strokeWidth="1.9"><path d="M4.5 12a7.5 7.5 0 0 1 12.9-5.2L20 9"/><path d="M20 4v5h-5"/><path d="M19.5 12a7.5 7.5 0 0 1-12.9 5.2L4 15"/><path d="M4 20v-5h5"/></svg>;
+    case "external": return <svg {...p}><path d="M14 5h5v5M19 5l-7.5 7.5"/><path d="M18 13.5V18a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 18V7.5A1.5 1.5 0 0 1 6 6h4.5"/></svg>;
+    case "share": return <svg {...p} strokeWidth="1.9"><circle cx="6.5" cy="12" r="2.4"/><circle cx="16" cy="6" r="2.4"/><circle cx="16" cy="18" r="2.4"/><path d="M8.7 10.8 13.8 7.2M8.7 13.2 13.8 16.8"/></svg>;
+    default: return null;
+  }
+}
+
+function Card({ev,saved,note,onSave,onNote,showTime}){
+  const [open,setOpen]=useState(false);
+  const [draft,setDraft]=useState(note||"");
+  const [flash,setFlash]=useState(false);
+  const ta=useRef(null);
+  useEffect(()=>{ setDraft(note||""); },[note]);
+  useEffect(()=>{ if(open&&ta.current) ta.current.focus(); },[open]);
+  const commit=()=>{ onNote(ev.id,draft.trim()); if(draft.trim()){ setFlash(true); setTimeout(()=>setFlash(false),1400);} };
+  return (
+    <div className={"card"+(saved?" saved":"")}>
+      <div className="row">
+        <div className="meta">
+          {showTime && <div className="ctime">{ev.s||"—"}{ev.e?"–"+ev.e:""}</div>}
+          <h3 className="ttl">{ev.title}</h3>
+          {ev.speakerFull && <div className="spk">{ev.speakerFull}</div>}
+          {ev.helo && <div className="helo-why"><Icon name="spark"/>Curadoria · {ev.helo.cat}{ev.helo.why?" · "+ev.helo.why:""}</div>}
+          <div className="loc"><Icon name="pin"/><span>{ev.local}{ev.area? " · "+ev.area:""}</span></div>
+          <div className="tags">
+            {ev.online && <span className="badge on-air"><Icon name="live"/>ONLINE</span>}
+            {ev.especial && <span className="badge esp"><Icon name="spark"/>ESPECIAL</span>}
+            {ev.selo && <span className="badge big"><Icon name="spark"/>{ev.selo}</span>}
+            {ev.type && <span className="tag fmt">{ev.type}</span>}
+            {ev.trackNames.slice(0,3).map(t=><span key={t} className="tag">{t}</span>)}
+          </div>
+        </div>
+        <button className={"star"+(saved?" on":"")} onClick={()=>onSave(ev.id)}
+          aria-pressed={saved} aria-label={saved?"Remover do meu cronograma":"Adicionar ao meu cronograma"}><Icon name={saved?"added":"add"}/></button>
+      </div>
+
+      <div className="actions">
+        <button className={"linkbtn"+(note?" has":"")} onClick={()=>setOpen(o=>!o)}>
+          <span className="dot"></span><Icon name="note"/>{note?(open?"Fechar":"Ver anotação"):(open?"Fechar":"Anotar")}
+        </button>
+        {(ev.desc && !open) && <button className="linkbtn" onClick={()=>setOpen(true)}><Icon name="external"/>Detalhes</button>}
+        {ev.maps && <a className="linkbtn" href={ev.maps} target="_blank" rel="noopener"><Icon name="pin"/>Mapa</a>}
+      </div>
+
+      {open && (
+        <div className="expand">
+          {ev.desc && <div className="desc">{ev.desc}</div>}
+          {ev.reg && <a className="linkbtn" href={ev.reg} target="_blank" rel="noopener"><Icon name="external"/>Inscrição / mais info</a>}
+          <textarea ref={ta} className="note" value={draft}
+            placeholder="Sua anotação… (ex.: chegar 10 min antes, falar sobre vaga, conflita com a outra sala)"
+            onChange={e=>setDraft(e.target.value)} onBlur={commit}/>
+          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+            <button className="savebtn" onClick={commit}>Salvar anotação</button>
+            {note && <button className="linkbtn" onClick={()=>{setDraft("");onNote(ev.id,"");}}>Apagar</button>}
+            {flash && <span className="notesaved"><Icon name="check"/>Salvo no seu celular</span>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FiltersPanel({adv,setAdv,toggleAdv,allTypes,allTracks,allAreas}){
+  return (
+    <React.Fragment>
+      <div className="toggle">Só atividades online<button className={"sw"+(adv.online?" on":"")} onClick={()=>setAdv(a=>({...a,online:!a.online}))} aria-pressed={adv.online}><i></i></button></div>
+      <div className="toggle" style={{marginBottom:12}}>Programação especial<button className={"sw"+(adv.especial?" on":"")} onClick={()=>setAdv(a=>({...a,especial:!a.especial}))} aria-pressed={adv.especial}><i></i></button></div>
+      <div className="fgroup"><h4>Formato</h4><div className="fopts">
+        {allTypes.map(t=><button key={t} className={"fopt"+(adv.types.includes(t)?" on":"")} onClick={()=>toggleAdv("types",t)}>{t}</button>)}
+      </div></div>
+      <div className="fgroup"><h4>Trilha / Núcleo</h4><div className="fopts">
+        {allTracks.map(t=><button key={t} className={"fopt"+(adv.tracks.includes(t)?" on":"")} onClick={()=>toggleAdv("tracks",t)}>{t}</button>)}
+      </div></div>
+      <div className="fgroup"><h4>Local</h4><div className="fopts">
+        {allAreas.map(t=><button key={t} className={"fopt"+(adv.areas.includes(t)?" on":"")} onClick={()=>toggleAdv("areas",t)}>{t}</button>)}
+      </div></div>
+    </React.Fragment>
+  );
+}
+
+
+function Skeleton(){
+  return (
+    <React.Fragment>
+      {[0,1].map(g=>(
+        <div className="tgroup" key={g}>
+          <div className="sk-time sk"></div>
+          {[0,1,2].map(i=>(
+            <div className="sk-card" key={i}>
+              <div className="sk-l sk" style={{width:"70%",height:15}}></div>
+              <div className="sk-l sk" style={{width:"44%"}}></div>
+              <div className="sk-l sk" style={{width:"86%"}}></div>
+              <div className="sk-l sk" style={{width:"32%",height:18,borderRadius:7}}></div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </React.Fragment>
+  );
+}
+
+function App(){
+  const sysDark = window.matchMedia && window.matchMedia("(prefers-color-scheme:dark)").matches;
+  const [theme,setTheme]=useState(()=>LS.get(K_TEMA, sysDark?"dark":"light"));
+  const [events,setEvents]=useState(()=>LS.get(K_CACHE,[]));
+  const [status,setStatus]=useState("load"); // load | ok | cache | err
+  const [cachedAt,setCachedAt]=useState(()=>LS.get(K_CACHE_EM,0));
+  const [day,setDay]=useState("");
+  const [q,setQ]=useState("");
+  const [temas,setTemas]=useState([]);
+  const [adv,setAdv]=useState({tracks:[],types:[],areas:[],online:false,especial:false});
+  const [showFilters,setShowFilters]=useState(false);
+  const [view,setView]=useState("prog");
+  const [heloCat,setHeloCat]=useState("");
+  const [saved,setSaved]=useState(()=>LS.get(K_SALVOS,[]));
+  const [notes,setNotes]=useState(()=>LS.get(K_NOTAS,{}));
+  const [img,setImg]=useState(null);
+  const canShare = typeof navigator!=="undefined" && !!navigator.share;
+  const EMBEDDED_MODE = (typeof EMBEDDED !== "undefined");
+  const [curadOn,setCuradOn]=useState(false);
+
+  useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); LS.set(K_TEMA,theme); },[theme]);
+  useEffect(()=>{ LS.set(K_SALVOS,saved); },[saved]);
+  useEffect(()=>{ LS.set(K_NOTAS,notes); },[notes]);
+
+  const load = async ()=>{
+    setStatus("load");
+    try{
+      const rows=await fetchAll();
+      const ev=normalize(rows);
+      setEvents(ev); setStatus("ok");
+      const now=Date.now(); setCachedAt(now);
+      LS.set(K_CACHE,ev); LS.set(K_CACHE_EM,now);
+    }catch(e){
+      if(LS.get(K_CACHE,[]).length){ setStatus("cache"); }
+      else setStatus("err");
+    }
+  };
+  useEffect(()=>{ load(); },[]);
+
+  const days = useMemo(()=>{
+    const set=[...new Set(events.map(e=>e.date).filter(Boolean))].sort();
+    return set.map(d=>({date:d, ...dLabel(d)}));
+  },[events]);
+  useEffect(()=>{ if(days.length && !days.find(d=>d.date===day)) setDay(days[0].date); },[days]);
+
+  const allTracks = useMemo(()=>[...new Set(events.flatMap(e=>e.trackNames))].sort((a,b)=>a.localeCompare(b,"pt")),[events]);
+  const allTypes  = useMemo(()=>[...new Set(events.map(e=>e.type).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt")),[events]);
+  const allAreas  = useMemo(()=>[...new Set(events.map(e=>e.area).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt")),[events]);
+
+  const savedSet=useMemo(()=>new Set(saved),[saved]);
+  const toggleSave=id=>setSaved(s=>s.includes(id)?s.filter(x=>x!==id):[...s,id]);
+  const setNote=(id,txt)=>setNotes(n=>{const c={...n}; if(txt)c[id]=txt; else delete c[id]; return c;});
+  const toggleTema=t=>setTemas(a=>a.includes(t)?a.filter(x=>x!==t):[...a,t]);
+  const toggleAdv=(k,v)=>setAdv(a=>({...a,[k]:a[k].includes(v)?a[k].filter(x=>x!==v):[...a[k],v]}));
+  const advCount = adv.tracks.length+adv.types.length+adv.areas.length+(adv.online?1:0)+(adv.especial?1:0);
+  const clearAll = ()=>{ setAdv({tracks:[],types:[],areas:[],online:false,especial:false}); setTemas([]); };
+
+  const match=ev=>{
+    if(temas.length && !temas.some(t=>ev.temas.includes(t))) return false;
+    if(adv.tracks.length && !ev.trackNames.some(n=>adv.tracks.includes(n))) return false;
+    if(adv.types.length && !adv.types.includes(ev.type)) return false;
+    if(adv.areas.length && !(ev.area && adv.areas.includes(ev.area))) return false;
+    if(adv.online && !ev.online) return false;
+    if(adv.especial && !ev.especial) return false;
+    if(q.trim()){ const n=norm(q); if(!norm(ev.title+" "+ev.speakerFull+" "+ev.local+" "+ev.trackNames.join(" ")+" "+ev.type).includes(n)) return false; }
+    return true;
+  };
+
+  let pool=events.filter(match);
+  if(view==="mine") pool=pool.filter(e=>savedSet.has(e.id));
+  else if(view==="curad") pool=pool.filter(e=>e.helo && (!heloCat || e.helo.cat===heloCat));
+  else pool=pool.filter(e=>e.date===day && (!curadOn || e.helo));
+
+  const groups=useMemo(()=>{
+    const list=[...pool].sort((a,b)=> (a.date||"").localeCompare(b.date||"") || (a.s||"").localeCompare(b.s||"") || a.title.localeCompare(b.title));
+    if(view==="mine" || view==="curad"){
+      const by={}; list.forEach(e=>{(by[e.date]=by[e.date]||[]).push(e);}); return {mode:"day",data:by};
+    }
+    const by={}; list.forEach(e=>{ const k=e.s? e.s+(e.e?"–"+e.e:"") : "Horário a definir"; (by[k]=by[k]||[]).push(e); }); return {mode:"time",data:by};
+  },[pool,view]);
+  const heloCounts=useMemo(()=>{ const c={}; events.forEach(e=>{ if(e.helo) c[e.helo.cat]=(c[e.helo.cat]||0)+1; }); return c; },[events]);
+  const total=pool.length;
+
+  const makeImage=async(date,items)=>{
+    const FT='"Bricolage Grotesque"', FH='"Hanken Grotesk"', FM='"JetBrains Mono"';
+    try{ if(document.fonts){ await Promise.all([
+      document.fonts.load('800 46px '+FT), document.fonts.load('700 25px '+FT),
+      document.fonts.load('700 14px '+FH), document.fonts.load('600 18px '+FH),
+      document.fonts.load('500 16px '+FH), document.fonts.load('italic 500 16px '+FH),
+      document.fonts.load('700 15px '+FM) ]); await document.fonts.ready; } }catch(e){}
+
+    const dpr=Math.min(window.devicePixelRatio||1,2.5), W=820, PAD=40, GAP=16, IN=26;
+    const inner=W-PAD*2-IN*2;
+    const C={g1:"#241848",g2:"#140C28",glow:"rgba(124,58,237,.40)",card:"rgba(255,255,255,.06)",cardln:"rgba(255,255,255,.11)",
+      ink:"#F5F0FC",sub:"#B2A4D2",violet:"#C7B4FF",gold:"#F6B72B",goldInk:"#2A1B05",teal:"#79E4D3",helo:"#F7A8CE",heloInk:"#3B1226"};
+    const fTtl='700 25px '+FT+',sans-serif', fSpk='600 18px '+FH+',sans-serif',
+      fLoc='500 16px '+FH+',sans-serif', fNote='italic 500 16px '+FH+',sans-serif',
+      fTime='700 15px '+FM+',monospace', fTag='700 14px '+FH+',sans-serif';
+    const PH=32;      // altura dos pills
+    const T1=34;      // do fim dos pills até a 1ª baseline do título
+    const LTtl=32, LSpk=24, LLoc=22, LNote=23; // alturas de linha
+    const rr=(ctx,x,y,w,h,r)=>{r=Math.min(r,h/2,w/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
+    const wrap=(ctx,text,maxW)=>{const words=(text||"").split(" ");const L=[];let c="";for(const w of words){const t=c?c+" "+w:w;if(ctx.measureText(t).width>maxW&&c){L.push(c);c=w;}else c=t;}if(c)L.push(c);return L;};
+    const mc=document.createElement("canvas").getContext("2d");
+    const pillW=(txt,font)=>{mc.font=font;return Math.round(mc.measureText(txt).width)+28;};
+    const HEAD=172;
+    let H=HEAD;
+    const blocks=items.map(ev=>{
+      const time=(ev.s||"—")+(ev.e?"–"+ev.e:"");
+      const tag=ev.helo? "★ "+(ev.helo.cat==="Conexões"? ev.helo.why : ev.helo.cat) : "";
+      const tW=pillW(time,fTime), gW=tag?pillW(tag,fTag):0;
+      const twoRows = tag && (tW+8+gW > inner);
+      const pillArea = twoRows ? PH*2+8 : PH;
+      mc.font=fTtl; const tl=wrap(mc,ev.title,inner);
+      mc.font=fSpk; const sl=ev.speakerFull?wrap(mc,ev.speakerFull,inner):[];
+      mc.font=fLoc; const ll=wrap(mc,(ev.local||"")+(ev.area?" · "+ev.area:""),inner);
+      const note=notes[ev.id]||""; mc.font=fNote; const nl=note?wrap(mc,note,inner-16):[];
+      // altura = mesmíssimos incrementos do desenho + rodapé
+      let adv = 24 + pillArea + T1 + tl.length*LTtl;
+      if(sl.length) adv += 6 + sl.length*LSpk;
+      if(ll.length) adv += 2 + ll.length*LLoc;
+      if(nl.length) adv += 10 + nl.length*LNote;
+      const h = adv + 8;
+      H+=h+GAP; return {ev,time,tag,tW,gW,twoRows,pillArea,tl,sl,ll,nl,h};
+    });
+    H+=PAD+26;
+    const cv=document.createElement("canvas"); cv.width=Math.round(W*dpr); cv.height=Math.round(H*dpr);
+    const ctx=cv.getContext("2d"); ctx.scale(dpr,dpr); ctx.textBaseline="alphabetic";
+    const pill=(txt,x,y,w,bg,fg,font)=>{ ctx.fillStyle=bg; rr(ctx,x,y,w,PH,PH/2); ctx.fill();
+      ctx.font=font; ctx.fillStyle=fg; ctx.textBaseline="middle"; ctx.fillText(txt,x+14,y+PH/2+1); ctx.textBaseline="alphabetic"; };
+    const g=ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,C.g1); g.addColorStop(1,C.g2);
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+    const rg=ctx.createRadialGradient(W-140,80,10,W-140,80,440); rg.addColorStop(0,C.glow); rg.addColorStop(1,"rgba(0,0,0,0)");
+    ctx.fillStyle=rg; ctx.fillRect(0,0,W,320);
+    ctx.font='700 14px '+FH+',sans-serif'; ctx.fillStyle=C.gold; ctx.fillText("MEU HACKTOWN",PAD,PAD+18);
+    ctx.font='800 46px '+FT+',sans-serif'; ctx.fillStyle=C.ink; ctx.fillText(dLabel(date).full,PAD,PAD+62);
+    const cnt=items.length+(items.length===1?" atividade":" atividades");
+    ctx.font='700 14px '+FH+',sans-serif'; const cw=Math.round(ctx.measureText(cnt).width)+28;
+    ctx.fillStyle="rgba(246,183,43,.15)"; rr(ctx,PAD,PAD+80,cw,30,15); ctx.fill();
+    ctx.fillStyle=C.gold; ctx.textBaseline="middle"; ctx.fillText(cnt,PAD+14,PAD+80+16); ctx.textBaseline="alphabetic";
+    ctx.strokeStyle="rgba(255,255,255,.10)"; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PAD,HEAD-16); ctx.lineTo(W-PAD,HEAD-16); ctx.stroke();
+
+    let y=HEAD;
+    for(const b of blocks){
+      const x=PAD,w=W-PAD*2;
+      ctx.fillStyle=C.card; rr(ctx,x,y,w,b.h,18); ctx.fill();
+      ctx.strokeStyle=C.cardln; ctx.lineWidth=1; rr(ctx,x,y,w,b.h,18); ctx.stroke();
+      const tx=x+IN; const py=y+24;
+      pill(b.time,tx,py,b.tW,C.gold,C.goldInk,fTime);
+      if(b.tag){ if(b.twoRows) pill(b.tag,tx,py+PH+8,b.gW,C.helo,C.heloInk,fTag);
+                 else pill(b.tag,tx+b.tW+8,py,b.gW,C.helo,C.heloInk,fTag); }
+      let ty=py+b.pillArea+T1;                 // 1ª baseline do título
+      ctx.font=fTtl; ctx.fillStyle=C.ink; b.tl.forEach(l=>{ ctx.fillText(l,tx,ty); ty+=LTtl; });
+      if(b.sl.length){ ty+=6; ctx.font=fSpk; ctx.fillStyle=C.violet; b.sl.forEach(l=>{ ctx.fillText(l,tx,ty); ty+=LSpk; }); }
+      if(b.ll.length){ ty+=2; ctx.font=fLoc; ctx.fillStyle=C.sub; b.ll.forEach(l=>{ ctx.fillText(l,tx,ty); ty+=LLoc; }); }
+      if(b.nl.length){ ty+=10; ctx.fillStyle=C.teal; ctx.fillRect(tx,ty-13,3,b.nl.length*LNote-6);
+        ctx.font=fNote; ctx.fillStyle=C.teal; b.nl.forEach(l=>{ ctx.fillText(l,tx+14,ty); ty+=LNote; }); }
+      y+=b.h+GAP;
+    }
+    ctx.font='600 14px '+FH+',sans-serif'; ctx.fillStyle=C.sub;
+    ctx.fillText("Meu HackTown  ·  dados de "+DATA_DATE+"  ·  sujeito a alterações",PAD,H-PAD+2);
+    setImg({url:cv.toDataURL("image/png"),label:dLabel(date).full});
+  };
+
+  const shareImage=async()=>{
+    if(!img) return;
+    try{
+      const blob=await (await fetch(img.url)).blob();
+      const file=new File([blob],"meu-hacktown.png",{type:"image/png"});
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title:"Meu HackTown", text:"Meu cronograma no HackTown 2026 · "+img.label});
+      } else if(navigator.share){
+        await navigator.share({title:"Meu HackTown", text:"Meu cronograma no HackTown 2026 · "+img.label});
+      } else { alert("Compartilhamento não disponível neste navegador — segure a imagem para salvar."); }
+    }catch(e){
+      // Fechar a folha de compartilhar dispara AbortError: é decisão do usuário, não falha.
+      // Qualquer outro erro precisa aparecer — engolir tudo fazia o botão não responder em silêncio.
+      if(e && e.name==="AbortError") return;
+      alert("Não consegui compartilhar a imagem. Use “Baixar PNG” ou segure a imagem para salvar.");
+    }
+  };
+
+  const cacheInfo = cachedAt? new Date(cachedAt).toLocaleString("pt-BR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "";
+
+  return (
+    <div className="shell">
+      {status==="load" && events.length>0 && <div className="prog" role="status" aria-label="Atualizando programação"><i></i></div>}
+      <aside className="side">
+        <div className="side-brand">
+          <h1>Meu <span>HackTown</span></h1>
+          <div className="sub">Ao vivo · 3–7 set · Santa Rita do Sapucaí</div>
+        </div>
+        <div className="side-nav">
+          <button className={view==="prog"?"on":""} onClick={()=>setView("prog")}><Icon name="agenda"/>Programação</button>
+          <button className={view==="curad"?"on":""} onClick={()=>setView("curad")}><Icon name="spark"/>Curadoria</button>
+          <button className={view==="mine"?"on":""} onClick={()=>setView("mine")}><Icon name="collection"/>Meu cronograma{saved.length>0 && <span className="badge-n">{saved.length}</span>}</button>
+        </div>
+        <div className="side-filters">
+          <div className="side-fh"><span>Filtros</span>{(advCount>0||temas.length>0)&&<button onClick={clearAll}>Limpar</button>}</div>
+          <FiltersPanel adv={adv} setAdv={setAdv} toggleAdv={toggleAdv} allTypes={allTypes} allTracks={allTracks} allAreas={allAreas}/>
+        </div>
+      </aside>
+      <div className="main">
+      <header className="top">
+        <div className="brand">
+          <div className="htitle">
+            <h1>Meu <span>HackTown</span></h1>
+            <div className="sub">Ao vivo · 3–7 set · Santa Rita do Sapucaí</div>
+          </div>
+          <div className="hbtns">
+            {!EMBEDDED_MODE && <button className={"iconbtn"+(status==="load"?" spin":"")} onClick={load} aria-label="Atualizar programação"><Icon name="refresh"/></button>}
+            <button className="iconbtn" onClick={()=>setTheme(t=>t==="dark"?"light":"dark")} aria-label="Alternar tema"><Icon name="theme"/></button>
+          </div>
+        </div>
+
+        {status==="cache" && <div className="banner warn">Sem conexão — mostrando a última versão salva ({cacheInfo}).<button onClick={load}>Tentar de novo</button></div>}
+        {status==="err" && <div className="banner err">Não consegui carregar a programação.<button onClick={load}>Tentar de novo</button></div>}
+
+        <div className="search">
+          <span className="si"><Icon name="search"/></span>
+          <input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar palestra, palestrante, sala…" inputMode="search"/>
+          {q && <button className="clr" onClick={()=>setQ("")} aria-label="Limpar busca"><Icon name="close"/></button>}
+        </div>
+
+        {view==="prog" && (
+          <div className="days">
+            {days.map(d=>(
+              <button key={d.date} className={"day"+(day===d.date?" on":"")} onClick={()=>setDay(d.date)}>
+                <div className="wd">{d.wd}</div><div className="dd">{d.dd}</div>
+              </button>
+            ))}
+          </div>
+        )}
+      </header>
+
+      {view==="curad" ? (
+        <div className="filterbar">
+          <div className="catbar">
+            <button className={"chip"+(heloCat===""?" curad":" curad off")} onClick={()=>setHeloCat("")}>Todos</button>
+            {HELO_CATS.filter(c=>heloCounts[c]).map(c=>(
+              <button key={c} className={"chip"+(heloCat===c?" curad":" curad off")} onClick={()=>setHeloCat(heloCat===c?"":c)}>{c} · {heloCounts[c]}</button>
+            ))}
+          </div>
+          <button className="advbtn" onClick={()=>setShowFilters(true)}>
+            <Icon name="sliders"/>Filtros{(advCount+temas.length)>0 && <span className="n">{advCount+temas.length}</span>}
+          </button>
+        </div>
+      ) : view==="prog" ? (
+        <div className="filterbar">
+          <div className="chips">
+            <button className={"chip curad"+(curadOn?"":" off")} onClick={()=>setCuradOn(v=>!v)}><Icon name="spark"/>Curadoria</button>
+            {TEMAS.map(t=><button key={t} className={"chip"+(temas.includes(t)?" on":"")} onClick={()=>toggleTema(t)}>{t}</button>)}
+          </div>
+          <button className="advbtn" onClick={()=>setShowFilters(true)}>
+            <Icon name="sliders"/>Filtros{advCount>0 && <span className="n">{advCount}</span>}
+          </button>
+        </div>
+      ) : null}
+
+      {!(status==="load" && !events.length) && <div className="count">
+        {view==="mine"
+          ? `${total} ${total===1?"item":"itens"} no seu cronograma`
+          : view==="curad"
+          ? `${total} destaque(s) da Helo${heloCat?" · "+heloCat:""}`
+          : `${total} ${total===1?"atividade":"atividades"}${day?" · "+dLabel(day).full:""}`}
+        {(temas.length||advCount||q||curadOn)&&view==="prog"?" (filtrado)":""}
+      </div>}
+
+      <div className="list" aria-busy={status==="load"}>
+        {status==="load" && !events.length && <Skeleton/>}
+
+        {total===0 && status!=="load" && (
+          <div className="empty">
+            <Icon name={view==="prog"?"search":view==="curad"?"spark":"collection"}/>
+            {view==="mine"
+              ? "Você ainda não marcou nada. Toque no + de uma atividade pra montar seu cronograma."
+              : view==="curad"
+              ? "Nenhum destaque nessa categoria com a busca atual."
+              : "Nada com esses filtros. Tenta limpar a busca ou os filtros."}
+          </div>
+        )}
+
+        {groups.mode==="time" && Object.keys(groups.data).sort().map(k=>(
+          <div className="tgroup" key={k}>
+            <div className="thead"><span className="t">{k}</span><span className="l"></span></div>
+            {groups.data[k].map(ev=><Card key={ev.id} ev={ev} saved={savedSet.has(ev.id)} note={notes[ev.id]} onSave={toggleSave} onNote={setNote}/>)}
+          </div>
+        ))}
+
+        {groups.mode==="day" && Object.keys(groups.data).sort().map(dk=>(
+          <div className="tgroup" key={dk}>
+            <div className="dayband">
+              <span>{dLabel(dk).full}</span><span className="n">{groups.data[dk].length} {view==="curad"?"destaque(s)":"marcado(s)"}</span>
+              <button className="dlbtn" onClick={()=>makeImage(dk,groups.data[dk])}><Icon name="download"/>Baixar imagem</button>
+            </div>
+            {groups.data[dk].map(ev=><Card key={ev.id} ev={ev} saved={savedSet.has(ev.id)} note={notes[ev.id]} onSave={toggleSave} onNote={setNote} showTime/>)}
+          </div>
+        ))}
+      </div>
+
+      </div>
+      <nav className="nav">
+        <button className={view==="prog"?"on":""} onClick={()=>setView("prog")}><span className="ic"><Icon name="agenda"/></span>Programação</button>
+        <button className={view==="curad"?"on":""} onClick={()=>setView("curad")}><span className="ic"><Icon name="spark"/></span>Curadoria</button>
+        <button className={view==="mine"?"on":""} onClick={()=>setView("mine")}><span className="ic"><Icon name="collection"/></span>Meu cronograma{saved.length>0 && <span className="badge-n">{saved.length}</span>}</button>
+      </nav>
+
+      {showFilters && (
+        <div className="modal" onClick={()=>setShowFilters(false)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="sheet-h"><span>Filtros avançados</span><button onClick={()=>setShowFilters(false)} aria-label="Fechar"><Icon name="close"/></button></div>
+            <div className="sheet-scroll">
+              <FiltersPanel adv={adv} setAdv={setAdv} toggleAdv={toggleAdv} allTypes={allTypes} allTracks={allTracks} allAreas={allAreas}/>
+            </div>
+            <div className="sheet-foot">
+              <button className="clr2" onClick={clearAll}>Limpar tudo</button>
+              <button className="apply" onClick={()=>setShowFilters(false)}>Ver {total} resultado(s)</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {img && (
+        <div className="modal" onClick={()=>setImg(null)}>
+          <div className="sheet" onClick={e=>e.stopPropagation()}>
+            <div className="sheet-h"><span>Cronograma · {img.label}</span><button onClick={()=>setImg(null)} aria-label="Fechar"><Icon name="close"/></button></div>
+            <div className="imgacts">
+              {canShare && <button className="share" onClick={shareImage}><Icon name="share"/>Compartilhar</button>}
+              <a className="dl" href={img.url} download={"meu-hacktown-"+img.label.replace(/[^0-9]/g,"")+".png"}><Icon name="download"/>Baixar PNG</a>
+            </div>
+            <div className="sheet-tip">{canShare?"“Compartilhar” abre o WhatsApp, Stories e afins. ":""}No celular você também pode <b>segurar a imagem → Salvar na galeria</b>.</div>
+            <div className="sheet-scroll sheet-img"><img src={img.url} alt={"Cronograma "+img.label}/></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
