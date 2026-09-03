@@ -1,114 +1,159 @@
 # Meu HackTown
 
-Um planejador pessoal para o **HackTown 2026**, criado para transformar uma programação de mais de 1.000 atividades em um cronograma que realmente faça sentido para mim.
+Planejador pessoal da programação do HackTown 2026 (2–7 set, Santa Rita do Sapucaí).
+Uso pessoal, sem login: cada pessoa usa no próprio aparelho e o que ela marca fica
+no navegador dela.
 
-O app combina **busca, filtros, curadoria personalizada, anotações e planejamento por dia** e o principal: permite compartilhar a seleção com outras pessoas por meio de imagens. Tudo isso em uma aplicação simples, leve e capaz de funcionar mesmo com a internet instável típica de eventos.
+No ar: **https://meu-hacktown.pages.dev**
 
-**→ [meu-hacktown.pages.dev](https://meu-hacktown.pages.dev)**
+## Arquivos
 
-<p align="center">
-  <img src="docs/img/mobile-programacao.png" width="270" alt="Lista da programação por dia">
-  <img src="docs/img/mobile-curadoria.png" width="270" alt="Aba de curadoria com destaques">
-  <img src="docs/img/carregando.png" width="270" alt="Tela de carregamento com esqueleto">
-</p>
+| Arquivo | O que é |
+|---|---|
+| `index.html` | O app inteiro. É o que você edita. Carrega React por CDN e o JSX é compilado no build. |
+| `functions/api/events.js` | Pages Function: busca a programação no Supabase e cacheia no edge. Vira a rota `/api/events`. |
+| `build.mjs` | Compila o JSX e escreve `dist/` — o que vai pro ar. |
+| `dist/` | Gerado. Nunca editar à mão. |
 
-## Contexto
-
-O HackTown tem uma programação enorme, distribuída por vários dias e locais. Para quem quer participar de forma intencional, o problema deixa de ser **encontrar atividades** (pois isso é o que não falta) e passa a ser decidir o que vale a pena priorizar em meio a tantas atrações variadas.
-
-Eu queria um lugar para montar essa seleção, fazer anotações e consultar meu cronograma durante o evento. Também queria algo que pudesse ser facilmente compartilhado com os colegas, em vez de depender de prints ou listas enviadas no grupo.
-
-Foi daí que surgiu o **Meu HackTown**.
-
-Além dos filtros oficiais do evento, criei uma camada de **curadoria própria**, organizada em temas como **IA, Desenvolvimento, Automação, Segurança, Empreendedorismo, Liderança, Design e Networking**. Os filtros para essa curadoria foram definidos com ajuda do Claude e aplicados ao conteúdo das atividades, buscando refletir meus interesses e áreas de atuação.
-
-## Recursos
-
-* **Programação por dia**, com busca tolerante a acentos (`sessao` encontra `Sessão`)
-* **Filtros por tema**, além dos filtros oficiais de trilha, formato e local
-* **Curadoria personalizada**, com destaques baseados no conteúdo das atividades e nos palestrantes
-* **Favoritar (★) e anotar** atividades diretamente no navegador
-* **Meu cronograma**, reunindo apenas as atividades selecionadas e agrupando-as por dia
-* **Compartilhamento em PNG**, gerando uma imagem do cronograma do dia para enviar para colegas ou salvar na galeria
-* **Funcionamento offline**, mantendo a última programação carregada em cache para uso sem conexão
-* **Tema claro e escuro**, acompanhando a preferência do sistema (esse foi só pra fazer charme)
-
-<p align="center">
-  <img src="docs/img/desktop.png" width="700" alt="Versão desktop com barra lateral">
-</p>
-
-## Funcionamento
-
-O projeto foi deliberadamente mantido pequeno: **um único arquivo HTML**, sem build, bundler ou `node_modules`.
-
-```text
-index.html    ~57 KB — estilos, componentes React e lógica
-```
-
-React e Babel são carregados por CDN, e o JSX é compilado no próprio navegador. Isso não é a solução mais performática possível, mas tornou o projeto extremamente simples de editar, publicar e transportar, inclusive pelo celular.
-
-Os dados vêm da API pública utilizada pelo HackTown. O processamento acontece inteiramente no cliente:
-
-```text
-fetchAll() → normalize() → filtros → agrupamento → render
-     ↓            ↓
-  Supabase    normalização,
-              temas e curadoria
-```
-
-O `normalize()` transforma a estrutura retornada pela API em um formato mais simples para a aplicação e também deriva os temas e informações utilizadas pela curadoria.
-
-As atividades favoritedas e as anotações são armazenadas no `localStorage`.
-
-Optei por não criar contas ou sincronização entre dispositivos porque o objetivo inicial era resolver um problema pessoal e compartilhar o resultado com apenas alguns colegas. Adicionar autenticação e um backend próprio aumentaria bastante a complexidade sem resolver uma necessidade real do MVP.
-
-### Offline
-
-A programação é baixada e armazenada em cache no navegador. Se o usuário estiver sem conexão, o aplicativo tenta utilizar essa última versão disponível e informa que está trabalhando com dados em cache.
-
-Isso é especialmente importante para o contexto do projeto: **um app de programação de evento precisa continuar útil justamente quando a rede do evento está ruim.** As imagens compartilhaveis das atividades escolhidas também ajudam nisso.
-
-
-### Sobre a chave do Supabase / API propría do hacktown
-
-A chave presente no código é uma `sb_publishable_…`, destinada ao uso no cliente. Ela não funciona como uma senha administrativa ou como uma credencial privada.
-
-O aplicativo utiliza o mesmo endpoint público de leitura disponibilizado para a programação do evento e não tenta contornar as regras de acesso do servidor.
-
-A chave foi mantida no repositório para que o projeto continue funcionando após ser clonado. Caso a organização do HackTown prefira que ela seja removida, posso alterar a implementação.
-
-## Rodar localmente
+## Rodar local
 
 ```bash
-git clone https://github.com/helo-labs/meu-hacktown.git
-cd meu-hacktown
-python3 -m http.server 8000
+npm install          # só na primeira vez
+npm run dev          # wrangler pages dev . → http://127.0.0.1:8788
 ```
 
-Depois, abra `http://localhost:8000`.
+Tem que ser por aqui, não por `python3 -m http.server`: o app pede a programação
+pra `/api/events`, e essa rota só existe quando o wrangler está servindo a pasta
+`functions/`. Com um servidor estático comum, o app abre e mostra erro de carga.
 
-O projeto precisa ser servido por HTTP. Abrir o `index.html` diretamente com `file://` não funciona porque a origem `null` é bloqueada pelo CORS da API.
+Nesse modo o `index.html` é servido como está, com o Babel compilando no navegador
+— mais lento, mas edita e recarrega sem passo de build.
+
+## Fonte de dados
+
+Supabase público do HackTown, só leitura, chave *publishable* (não é segredo).
+Tabela `events` com `status=eq.publicado`, embeds de `venue`, `event_tracks→tracks`
+e `event_speakers→speakers`. O `SELECT` completo está em `functions/api/events.js`.
+
+**O app não fala com o Supabase direto.** Ele pede pra `/api/events`, e a Function
+faz o resto:
+
+- Busca paginada de 1000 em 1000 (teto de 8 páginas — hoje são ~1.300 atividades,
+  e acima de 8.000 truncaria em silêncio).
+- Guarda a resposta no cache da Cloudflare por **5 minutos**. Enquanto ela está
+  quente, ninguém toca no Supabase, tenha o app 2 ou 2.000 visitantes.
+- Guarda também uma **cópia de reserva de 24 h**, usada só se o Supabase falhar.
+  Se cair no meio do evento, o app continua servindo a última versão boa em vez de
+  mostrar erro pra quem abre pela primeira vez.
+- Devolve o header `x-mht-cache: hit | miss | reserva` — dá pra conferir de onde
+  veio a resposta sem abrir o painel da Cloudflare.
+
+Sem esse cache, cada abertura do app fazia 2 requisições no backend deles, inclusive
+pra mesma pessoa reabrindo pela quinta vez. Era carga na infraestrutura de terceiro,
+proporcional ao número de usuários.
+
+A chave está no topo da Function como padrão, pro deploy funcionar sem passo extra.
+Pra sobrescrever, definir `SB_KEY` nas variáveis de ambiente do projeto no Cloudflare.
+
+**Pegadinha:** `guarda_chuva` é **booleano**, não string. Tratar como string quebra
+o `normalize()` inteiro — por isso a leitura passa por
+`typeof r.guarda_chuva==="string" ? … : ""`. Já quebrou uma vez.
+
+## Estrutura do `index.html`
+
+| Faixa | O que é |
+|---|---|
+| `<style>` | Tokens de cor (claro/escuro), layout mobile, e o bloco desktop em `@media (min-width:960px)` / `1360px` |
+| Constantes | Chaves do localStorage, listas de temas e marcas |
+| Puras | `norm`, `dLabel`, `temasFor`, `bigBrand`, `heloFor`, `normalize` — sem I/O, sem React |
+| `fetchAll` | Único ponto que fala com a rede — hoje é uma linha, pedindo `/api/events` |
+| Componentes | `Icon`, `Card`, `FiltersPanel`, `Skeleton`, `App` |
+
+Fluxo de um carregamento: `fetchAll()` → `normalize()` (achata os embeds e deriva
+temas/curadoria) → `App` guarda em estado e no cache → `match()` filtra → `groups`
+agrupa por horário (aba Programação) ou por dia (Curadoria e Meu cronograma).
+
+## localStorage — leia antes de mexer
+
+```
+mht_theme      claro/escuro
+mht_saved      ids das atividades marcadas   ← histórico do usuário
+mht_notes      anotações por id              ← histórico do usuário
+mht_cache_ev   cópia offline da programação  (descartável, rebaixa sozinho)
+mht_cache_at   quando o cache foi gravado    (descartável)
+```
+
+As duas do meio são o cronograma que a pessoa montou. Três regras:
+
+1. **Nunca renomear essas chaves.** Elas viraram as constantes `K_*` no topo do
+   script justamente pra ninguém digitar errado. Trocar uma string apaga o
+   cronograma de todo mundo, sem aviso e sem recuperação.
+2. **Deploy não apaga nada.** Os dados moram no navegador, não no arquivo
+   publicado. Subir versão quebrada e reverter não perde nada.
+3. **URL de preview é outra origem.** Cada deploy gera algo como
+   `8411869d.meu-hacktown.pages.dev`. Quem marcar atividades por esse link tem o
+   histórico preso lá, invisível na URL oficial. Apontar um domínio próprio um dia
+   tem o mesmo efeito para todos.
+
+`mht_saved` guarda ids do Supabase: se uma atividade for republicada com id novo,
+ela some do "Meu cronograma" sozinha. Não tem como evitar do lado do app.
+
+Esse cache do navegador é **rede de segurança offline, não economia de requisição**:
+o app sempre tenta a rede primeiro e só cai nele quando o fetch falha. Quem economiza
+requisição é o cache da Function.
+
+## Publicar
+
+Conta Cloudflare **helo-labs** (`helolabs.conteudo@gmail.com`), projeto
+`meu-hacktown`. Conferir a conta antes — a máquina alterna entre contas de cliente:
+
+```bash
+npx --yes wrangler@latest whoami          # tem que ser helolabs.conteudo@gmail.com
+npm run deploy                            # build + wrangler pages deploy dist
+```
+
+O deploy sobe a pasta `dist/`, que o build gera com o `index.html` já compilado e a
+pasta `functions/` junto. Publicar a raiz do projeto por engano sobe a versão com
+Babel e o `node_modules`.
+
+Não existe passo de "regerar os dados": o app puxa do Supabase ao vivo, através da
+Function, e se atualiza sozinho conforme a programação muda.
+
+## O build
+
+`npm run build` faz uma coisa só: tira o compilador Babel de dentro do navegador.
+
+O JSX precisa virar JavaScript em algum momento. Antes isso acontecia no aparelho de
+cada pessoa, a cada abertura, e custava **617 KB gzip** — 36× o tamanho do app e 13×
+o do próprio React. Agora acontece aqui, uma vez, antes de publicar.
+
+O app compilado fica ~13 KB maior que o fonte (JSX vira `React.createElement`), e os
+617 KB do compilador somem do carregamento.
+
+O build também é a rede de proteção contra sintaxe: o JSX é compilado só no navegador
+em dev, então um `</div>` perdido não aparece até a página abrir em branco. O
+`transformSync` do build falha com erro claro antes de qualquer coisa subir — não
+existe mais o passo manual de compile-check.
 
 ## Limites conhecidos
 
-O projeto também tem algumas limitações conhecidas:
+- A programação pode atrasar até **5 minutos** em relação ao Supabase (TTL do cache).
+  Encurtar isso é trocar frescor por carga na infraestrutura do HackTown: o número
+  está em `TTL`, no topo da Function.
+- O cache da Cloudflare é **por datacenter**, não global. Com público espalhado, o
+  Supabase leva algumas requisições a mais do que o TTL sugere — ainda assim, ordens
+  de grandeza menos que uma por visitante. Cache único de verdade exigiria Workers KV.
+- `fetchAll` na Function para em `MAX_PAGINAS` (8 × 1000 = 8.000 atividades) e
+  **trunca em silêncio** se passar disso. Hoje são ~1.300.
+- O app baixa a edição inteira e filtra em memória. Tranquilo nessa escala; se um dia
+  passar de ~5.000, precisa de paginação no servidor.
+- Filtro e busca recalculam sobre todos os eventos a cada tecla, e os cards não são
+  memoizados — digitar num dia cheio (318 atividades) engasga no celular.
+- PDFs, OCR, login e sincronização entre aparelhos estão fora de escopo por decisão.
 
-* **Babel no navegador:** representa cerca de 617 KB comprimidos, contra ~17 KB do app e ~46 KB do React. É o maior custo do carregamento. Precompilar o JSX resolveria isso, mas exigiria introduzir justamente o processo de build que o projeto busca evitar.
-* **Busca:** atualmente recalcula os resultados sobre todas as atividades a cada tecla e os cards não são memoizados. Em dias com muitas atividades, isso pode causar pequenos delays em celulares.
-* **Dados:** a edição inteira é baixada e filtrada em memória. Funciona bem na escala atual, mas uma programação muito maior exigiria paginação ou processamento no servidor.
-* **Paginação:** o carregamento possui um limite de 8.000 atividades (contra as ~1200 do evento, não há problemas).
-* **Filtros:** nas abas **Curadoria** e **Meu cronograma**, os filtros de tema continuam ativos mesmo quando não estão visíveis na interface. -- resolvido 02/09
+## Pendências
 
-Esses pontos são conhecidos e fazem parte das decisões e trade-offs deste projeto, não bugs desconhecidos.
-
-## Sobre
-
-Feito  para uso próprio durante o HackTown 2026.
-
-**Este projeto não possui vínculo com a organização do evento.**
-
-Se você vai ao HackTown, fique à vontade para usar: [meu-hacktown.pages.dev](https://meu-hacktown.pages.dev).
-
-Se quiser adaptar a ideia para outro evento, o principal ponto de integração é o `normalize()`: basta adaptar a consulta e o mapeamento dos dados para que o restante da aplicação continue funcionando.
-
-O código pode ser usado, copiado e adaptado livremente. Os dados da programação pertencem ao HackTown.
+- Botão de Filtros na aba **Meu cronograma**: os filtros se aplicam ali mas não há
+  como configurá-los, mesmo problema já corrigido na Curadoria.
+- Chips de tema (IA, Dev…) seguem aplicados fora da aba Programação sem aparecer lá.
+- Memoizar os cards e o filtro, pra parar o engasgo ao digitar em dia cheio.

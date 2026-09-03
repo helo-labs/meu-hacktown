@@ -1,0 +1,14 @@
+{
+  "name": "meu-hacktown",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npx --yes wrangler@latest pages dev .",
+    "build": "node build.mjs",
+    "deploy": "node build.mjs && npx --yes wrangler@latest pages deploy dist --project-name=meu-hacktown --branch=main --commit-dirty=true"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.0",
+    "@babel/preset-react": "^7.26.3"
+  }
+}

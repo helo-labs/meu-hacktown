@@ -316,11 +316,10 @@
 <script type="text/babel">
 const {useState,useEffect,useMemo,useRef} = React;
 
-// ---- Fonte de dados (chave pública/publishable — sem risco em ficar exposta) ----
-const SB_URL = "https://xbsooiedncsrmrhjasvk.supabase.co";
-const SB_KEY = "sb_publishable_-xZkCMPyJLSSXZZvwHRGLw_QFbLS_yN";
-const SELECT = "id,title,description,event_date,start_time,end_time,age_rating,activity_type,status,guarda_chuva,is_evento_maior,image_url,parent_event_id,formato,mediador,selo,registration_url,venue:venue_id(name,area,maps_url),event_tracks(tracks(id,name,code)),event_speakers(cargo_empresa,speakers(id,name,cargo_empresa))";
-const DATA_DATE = (typeof BUILD_DATE!=="undefined") ? BUILD_DATE : new Date().toLocaleDateString("pt-BR");
+// ---- Fonte de dados ----
+// O app não fala com o Supabase direto: pede pra /api/events, a Pages Function
+// que busca e cacheia a programação no edge (functions/api/events.js).
+const DATA_DATE = new Date().toLocaleDateString("pt-BR");
 
 const TEMAS = ["IA","Dev","Automação","Segurança","Empreender","Liderança","Design","Networking"];
 // Chaves do localStorage. NUNCA renomear: o histórico de quem já usa o app
@@ -329,10 +328,6 @@ const TEMAS = ["IA","Dev","Automação","Segurança","Empreender","Liderança","
 const K_TEMA="mht_theme", K_SALVOS="mht_saved", K_NOTAS="mht_notes",
       K_CACHE="mht_cache_ev", K_CACHE_EM="mht_cache_at";
 
-// Paginação do Supabase: a API devolve no máximo PAGINA por chamada.
-// MAX_PAGINAS é um teto de segurança contra laço infinito, não um limite de dados —
-// se a programação passar de PAGINA*MAX_PAGINAS, o app truncaria em silêncio.
-const PAGINA=1000, MAX_PAGINAS=8;
 
 const LS = {
   get(k,f){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):f; }catch(e){ return f; } },
@@ -420,17 +415,9 @@ function normalize(rows){
 }
 
 async function fetchAll(){
-  const page=PAGINA; let offset=0, all=[];
-  for(let i=0;i<MAX_PAGINAS;i++){
-    const url=`${SB_URL}/rest/v1/events?select=${encodeURIComponent(SELECT)}&status=eq.publicado&order=event_date.asc,start_time.asc,id.asc&limit=${page}&offset=${offset}`;
-    const res=await fetch(url,{headers:{apikey:SB_KEY,Authorization:"Bearer "+SB_KEY}});
-    if(!res.ok) throw new Error("HTTP "+res.status);
-    const rows=await res.json();
-    all=all.concat(rows);
-    if(rows.length<page) break;
-    offset+=page;
-  }
-  return all;
+  const res=await fetch("/api/events");
+  if(!res.ok) throw new Error("HTTP "+res.status);
+  return await res.json();
 }
 
 function Icon({name}){
@@ -568,7 +555,6 @@ function App(){
   const [notes,setNotes]=useState(()=>LS.get(K_NOTAS,{}));
   const [img,setImg]=useState(null);
   const canShare = typeof navigator!=="undefined" && !!navigator.share;
-  const EMBEDDED_MODE = (typeof EMBEDDED !== "undefined");
   const [curadOn,setCuradOn]=useState(false);
 
   useEffect(()=>{ document.documentElement.setAttribute("data-theme",theme); LS.set(K_TEMA,theme); },[theme]);
@@ -761,7 +747,7 @@ function App(){
             <div className="sub">Ao vivo · 3–7 set · Santa Rita do Sapucaí</div>
           </div>
           <div className="hbtns">
-            {!EMBEDDED_MODE && <button className={"iconbtn"+(status==="load"?" spin":"")} onClick={load} aria-label="Atualizar programação"><Icon name="refresh"/></button>}
+            <button className={"iconbtn"+(status==="load"?" spin":"")} onClick={load} aria-label="Atualizar programação"><Icon name="refresh"/></button>
             <button className="iconbtn" onClick={()=>setTheme(t=>t==="dark"?"light":"dark")} aria-label="Alternar tema"><Icon name="theme"/></button>
           </div>
         </div>
