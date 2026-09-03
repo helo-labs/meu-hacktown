@@ -1,6 +1,6 @@
 # Meu HackTown
 
-Um planejador pessoal para o **HackTown 2026**, criado para transformar uma programação de mais de 1.000 atividades em um cronograma que realmente faça sentido para mim.
+Um planejador pessoal para o **HackTown 2026**, criado para transformar uma programação de mais de 1.300 atividades em um cronograma que realmente faça sentido para mim.
 
 O app combina **busca, filtros, curadoria personalizada, anotações e planejamento por dia** e o principal: permite compartilhar a seleção com outras pessoas por meio de imagens. Tudo isso em uma aplicação simples, leve e capaz de funcionar mesmo com a internet instável típica de eventos.
 
@@ -93,7 +93,7 @@ O projeto também tem algumas limitações conhecidas:
 * **Atraso da programação:** a resposta fica 5 minutos em cache, então uma alteração feita pela organização pode levar esse tempo até aparecer no app.
 * **Busca:** atualmente recalcula os resultados sobre todas as atividades a cada tecla e os cards não são memoizados. Em dias com muitas atividades, isso pode causar pequenos delays em celulares.
 * **Dados:** a edição inteira é baixada e filtrada em memória. Funciona bem na escala atual, mas uma programação muito maior exigiria paginação ou processamento no servidor.
-* **Paginação:** o carregamento possui um limite de 8.000 atividades (contra as ~1200 do evento, não há problemas).
+* **Paginação:** o carregamento possui um limite de 8.000 atividades (contra as ~1300 do evento, não há problemas).
 * **Filtros:** nas abas **Curadoria** e **Meu cronograma**, os filtros de tema continuam ativos mesmo quando não estão visíveis na interface. -- resolvido 02/09
 
 Esses pontos são conhecidos e fazem parte das decisões e trade-offs deste projeto, não bugs desconhecidos.
@@ -108,4 +108,4 @@ Se você vai ao HackTown, fique à vontade para usar: [meu-hacktown.pages.dev](h
 
 Se quiser adaptar a ideia para outro evento, o principal ponto de integração é o `normalize()`: basta adaptar a consulta e o mapeamento dos dados para que o restante da aplicação continue funcionando.
 
-O código pode ser usado, copiado e adaptado livremente. Os dados da programação pertencem ao HackTown.
+O código pode ser usado, copiado e adaptado livremente. Os dados da programação das atividades do evento pertencem ao HackTown.
